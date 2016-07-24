@@ -1,0 +1,55 @@
+# local config
+local.properties
+
+# eclipse
+.classpath
+.project
+.settings/
+
+# intellij
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# netbeans
+nbproject/
+
+# ant
+build.xml
+
+# android
+*.apk
+*.ap_
+*.dex
+*.jks
+*.log
+.navigation/
+captures/
+gen/
+proguard/
+
+# gradle
+.gradle/
+.gradletasknamecache
+gradle-app.setting
+
+# maven
+target/
+dependency-reduced-pom.xml
+
+# other build files
+build/
+bin/
+classes/
+dist/
+manifest.mf
+out/
+*.class
+
+# vim
+.*.sw[a-p]
+
+# os related files
+.DS_Store
+desktop.ini
