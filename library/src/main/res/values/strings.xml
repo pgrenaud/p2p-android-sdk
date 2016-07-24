@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">p2p-android-sdk</string>
+    <string name="pref_json_peer_list_key">peer_list</string>
+    <string name="pref_peer_name_default">Default name</string>
+</resources>
