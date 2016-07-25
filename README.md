@@ -43,7 +43,7 @@ Then, add the `p2p-android-sdk` dependency:
 
 ```gradle
 dependencies {
-    compile 'com.github.pgrenaud:p2p-android-sdk:1.0.0'
+    compile 'com.github.pgrenaud:p2p-android-sdk:1.1.0'
 }
 ```
 
@@ -157,6 +157,67 @@ private PeerServiceListener listener = new PeerServiceListener() {
 ```
 Note that when you use those callbacks to perform UI update, you need to wrap your code inside a `runOnUiThread(...)` callback.
 
+Fifth, in order to handle NFC beam, you need to register the NFC callback (inside the `ServiceConnection` define above):
+
+```java
+private Intent nfcIntent;
+
+private ServiceConnection connection = new ServiceConnection() {
+    @Override
+    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+        ...
+        service.registerNfcCallback(getActivity());
+        service.handleNfcIntent(nfcIntent);
+        ...
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName componentName) {
+        ...
+        service.unregisterNfcCallback(getActivity());
+        ...
+    }
+};
+```
+
+Use `registerNfcCallback(getActivity())` to registered your activity as being able to handle NFC beam when connecting to the service.
+Use `handleNfcIntent(nfcIntent)` to let the service handle the NFC beam contains in an Intent.
+Use `unregisterNfcCallback(getActivity())` to unregistered your activity when disconnecting from the service.
+
+Sixth, you need to store the intent to be able to send it to the service later:
+
+```java
+@Override
+protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+
+    setIntent(intent);
+}
+
+@Override
+protected void onResume() {
+    super.onResume();
+
+    nfcIntent = getIntent();
+}
+```
+
+Inside `onNewIntent(...)`, you call `setIntent(intent)` in order to have access to `getIntent()` inside `onResume()`.
+Inside `onResume()`, you set the `nfcIntent` field with `getIntent()`.
+When the service will be reconnected, you will have to send the intent to the service (as shown above).
+
+Seventh, you need to add this intent filter in your **activity** tag inside your `AndroidManifest.xml` file:
+
+```xml
+<intent-filter>
+    <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <data android:mimeType="application/vnd.com.pgrenaud.android.p2p.beam" />
+</intent-filter>
+```
+
+That intent filter will tell your application that your activity can handle beam created by the `PeerService`.
+
 Usage
 -----
 
@@ -193,6 +254,7 @@ Here's an example of an activity with everything we showed you:
 public class MainActivity extends AppCompatActivity {
 
     private PeerService service;
+    private Intent nfcIntent;
     private boolean bound = false;
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -202,6 +264,9 @@ public class MainActivity extends AppCompatActivity {
             PeerServiceBinder binder = (PeerServiceBinder) iBinder;
             service = binder.getService();
             service.setListener(listener);
+
+            service.registerNfcCallback(getActivity());
+            service.handleNfcIntent(nfcIntent);
 
             service.getPeerRepository(); // TODO: Initialize your UI
             service.getSelfPeerEntity(); // TODO: Initialize your UI
@@ -216,6 +281,8 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceDisconnected(ComponentName componentName) {
 
             service.setListener(null);
+
+            service.unregisterNfcCallback(getActivity());
 
             bound = false;
         }
@@ -272,6 +339,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        setIntent(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        nfcIntent = getIntent();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
 
@@ -288,6 +369,10 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, PeerService.class);
         stopService(intent);
+    }
+
+    public Activity getActivity() {
+        return this;
     }
 }
 ```
