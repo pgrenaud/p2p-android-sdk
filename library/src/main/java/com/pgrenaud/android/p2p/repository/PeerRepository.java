@@ -11,12 +11,16 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.pgrenaud.android.p2p.entity.PeerEntity;
+import com.pgrenaud.android.p2p.service.PeerService;
 
 public class PeerRepository {
 
     private final Map<UUID, PeerEntity> peers;
+    private final PeerService service;
 
-    public PeerRepository() {
+    public PeerRepository(PeerService service) {
+        this.service = service;
+
         peers = new ConcurrentHashMap<>();
     }
 
@@ -29,7 +33,12 @@ public class PeerRepository {
     }
 
     public void add(PeerEntity peerEntity) {
-        peers.put(peerEntity.getUUID(), peerEntity);
+        if (service.getSelfPeerEntity() != null &&
+            service.getSelfPeerEntity().getUUID().equals(peerEntity.getUUID())) {
+            // Do not add peerEntity if it is the selfPeerEntity
+        } else {
+            peers.put(peerEntity.getUUID(), peerEntity);
+        }
     }
 
     /**
@@ -39,10 +48,10 @@ public class PeerRepository {
      * @return Returns true if the PeerEntity was added to the repository or false if it was updated.
      */
     public boolean addOrUpdate(PeerEntity peerEntity) {
-        PeerEntity peer = peers.get(peerEntity.getUUID());
+        PeerEntity peer = get(peerEntity.getUUID());
 
         if (peer == null) {
-            peers.put(peerEntity.getUUID(), peerEntity);
+            add(peerEntity);
 
             return true;
         } else {
@@ -55,6 +64,16 @@ public class PeerRepository {
     public void addAll(Collection<PeerEntity> peerEntities) {
         for (PeerEntity peer : peerEntities) {
             add(peer);
+        }
+    }
+
+    public void mergeAll(Collection<PeerEntity> peerEntities) {
+        for (PeerEntity peerEntity : peerEntities) {
+            PeerEntity peer = get(peerEntity.getUUID());
+
+            if (peer == null) {
+                add(peerEntity); // FIXME: Prevent adding the selfPeerEntity
+            }
         }
     }
 

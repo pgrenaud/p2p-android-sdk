@@ -35,7 +35,7 @@ public class PeerService extends Service {
     private final IBinder binder = new PeerServiceBinder();
     private final QueueRepository queueRepository = new QueueRepository();
     private final FileRepository fileRepository = new FileRepository();
-    private final PeerRepository peerRepository = new PeerRepository();
+    private final PeerRepository peerRepository = new PeerRepository(this);
     private final PeerHive peerHive = new PeerHive(this, peerRepository);
 
     private PeerServiceListener listener;

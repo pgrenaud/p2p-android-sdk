@@ -44,7 +44,7 @@ public class QueueRepository {
     }
 
     public void putAll(EventEntity event) {
-        for (BlockingQueue<EventEntity> queue : queues.values()) {
+        for (BlockingQueue<EventEntity> queue : getAll()) {
             try {
                 queue.put(event);
             } catch (InterruptedException e) {
