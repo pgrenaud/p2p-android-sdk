@@ -1,13 +1,19 @@
 package com.pgrenaud.android.p2p.service;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcEvent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.format.Formatter;
@@ -15,6 +21,7 @@ import android.util.Log;
 
 import java.io.IOException;
 
+import com.google.gson.JsonSyntaxException;
 import com.pgrenaud.android.p2p.R;
 import com.pgrenaud.android.p2p.entity.PeerEntity;
 import com.pgrenaud.android.p2p.web.RequestHandler;
@@ -138,6 +145,62 @@ public class PeerService extends Service {
             editor.apply();
 
             Log.d("PeerService", "PeerService destroyed");
+        }
+    }
+
+    public void registerNfcCallback(Activity activity) {
+        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (nfcAdapter != null) {
+            // Register callback
+            nfcAdapter.setNdefPushMessageCallback(new NfcAdapter.CreateNdefMessageCallback() {
+                @Override
+                public NdefMessage createNdefMessage(NfcEvent event) {
+                    return new NdefMessage(
+                        new NdefRecord[] {
+                            NdefRecord.createMime(
+                                "application/vnd.com.pgrenaud.android.p2p.beam",
+                                getPeerRepository().encode().getBytes()
+                            )
+                        }
+                    );
+                }
+            }, activity);
+
+            Log.d("PeerService", "NdefPushMessageCallback registered");
+        }
+    }
+
+    public void unregisterNfcCallback(Activity activity) {
+        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (nfcAdapter != null) {
+            // Unregister callback
+            nfcAdapter.setNdefPushMessageCallback(null, activity);
+
+            Log.d("PeerService", "NdefPushMessageCallback unregistered");
+        }
+    }
+
+    /**
+     * Merge all the known peers by an other peer sent over Android Beam (NFC).
+     * You must call {@link PeerHive#sync()} and update your UI yourself after calling this method.
+     *
+     * @param intent Intent sent by Android Beam containing a NDEF payload.
+     */
+    public void handleNfcIntent(@Nullable Intent intent) {
+        if (intent != null && NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
+            try {
+                Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+                // only one message sent during the beam
+                NdefMessage msg = (NdefMessage) rawMsgs[0];
+
+                // record 0 contains the MIME type, record 1 is the AAR, if present
+                String json = new String(msg.getRecords()[0].getPayload());
+
+                getPeerRepository().mergeAll(PeerRepository.decode(json));
+            } catch (JsonSyntaxException | IndexOutOfBoundsException e) {
+                Log.e("PeerService", "handleNfcIntent", e);
+            }
         }
     }
 
