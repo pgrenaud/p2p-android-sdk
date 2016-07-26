@@ -43,7 +43,7 @@ Then, add the `p2p-android-sdk` dependency:
 
 ```gradle
 dependencies {
-    compile 'com.github.pgrenaud:p2p-android-sdk:1.1.0'
+    compile 'com.github.pgrenaud:p2p-android-sdk:1.2.0'
 }
 ```
 
