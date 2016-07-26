@@ -141,7 +141,7 @@ public class PeerService extends Service {
             // Saving peers to persistent storage
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getService());
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString(getString(R.string.pref_json_peer_list_key), peerRepository.encode());
+            editor.putString(getString(R.string.pref_json_peer_list_key), peerRepository.persistEncode());
             editor.apply();
 
             Log.d("PeerService", "PeerService destroyed");

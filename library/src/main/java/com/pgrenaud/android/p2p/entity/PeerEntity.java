@@ -4,8 +4,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.annotations.Until;
 
 import java.util.Date;
 import java.util.Locale;
@@ -18,8 +20,8 @@ public class PeerEntity implements Comparable<PeerEntity> {
     private static final String ACCESSED_AT_FORMAT = "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS";
     private static final String TO_STRING_FORMAT = "%S (%s)";
 
-    // Do not serialize accessedAt or online
-    private transient Date accessedAt;
+    // Do not serialize location or online
+    private transient LocationEntity location;
     private transient boolean online;
 
     private UUID uuid;
@@ -28,8 +30,14 @@ public class PeerEntity implements Comparable<PeerEntity> {
     @SerializedName("ip")
     private String ipAddress;
     private Integer port;
-    @SerializedName("loc")
-    private LocationEntity location;
+    @Until(1.3)
+    @SerializedName("accessed_at")
+    private Date accessedAt;
+
+    // Ensure that location is properly initialize when Gson is decoding
+    private PeerEntity() {
+        this(null, null, null);
+    }
 
     public PeerEntity(String displayName, String ipAddress, Integer port) {
         this.displayName = displayName;
@@ -109,8 +117,14 @@ public class PeerEntity implements Comparable<PeerEntity> {
         return getDisplayName().compareTo(peerEntity.getDisplayName());
     }
 
-    public String encode() {
+    public String persistEncode() {
         Gson gson = new Gson();
+
+        return gson.toJson(this);
+    }
+
+    public String encode() {
+        Gson gson = new GsonBuilder().setVersion(1.4).create();
 
         return gson.toJson(this);
     }
