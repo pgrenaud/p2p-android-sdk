@@ -86,6 +86,8 @@ public class PeerWorker implements Runnable {
                                 } else if (event.getEvent() == EventEntity.Type.LOCATION_UPDATE) {
                                     peer.getLocation().setLocation(event.getParams().getLocation());
                                     notifyLocationListener();
+                                } else if (event.getEvent() == EventEntity.Type.DIRECTORY_CHANGE) {
+                                    notifyDirectoryListener();
                                 } else {
                                     Log.e("PeerWorker", "polling: unknown event type");
 
@@ -170,6 +172,14 @@ public class PeerWorker implements Runnable {
             Log.d("PeerWorker", "Invoking listener onPeerLocationUpdate()");
 
             hive.getService().getListener().onPeerLocationUpdate(peer);
+        }
+    }
+
+    private void notifyDirectoryListener() {
+        if (hive.getService().getListener() != null) {
+            Log.d("PeerWorker", "Invoking listener notifyDirectoryListener()");
+
+            hive.getService().getListener().onPeerDirectoryChange(peer);
         }
     }
 }

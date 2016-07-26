@@ -40,6 +40,8 @@ public class EventEntity {
         DISPLAY_NAME_UPDATE,
         @SerializedName("loc")
         LOCATION_UPDATE,
+        @SerializedName("dir")
+        DIRECTORY_CHANGE,
         ;
     }
 

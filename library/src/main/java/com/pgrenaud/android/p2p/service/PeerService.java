@@ -246,5 +246,6 @@ public class PeerService extends Service {
         void onPeerConnection(PeerEntity peerEntity);
         void onPeerDisplayNameUpdate(PeerEntity peerEntity);
         void onPeerLocationUpdate(PeerEntity peerEntity);
+        void onPeerDirectoryChange(PeerEntity peerEntity);
     }
 }
