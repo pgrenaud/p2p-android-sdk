@@ -19,6 +19,10 @@ public class LocationEntity {
         this(0.0, 0.0);
     }
 
+    public LocationEntity(Location location) {
+        this(location.getLatitude(), location.getLongitude());
+    }
+
     public LocationEntity(Double latitude, Double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
@@ -46,6 +50,15 @@ public class LocationEntity {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    public void setLocation(LocationEntity locationEntity) {
+        latitude = locationEntity.getLatitude();
+        longitude = locationEntity.getLongitude();
+    }
+
+    public boolean hasLocation() {
+        return latitude != 0.0 || longitude != 0.0;
     }
 
     public static float distanceBetween(double startLatitude, double startLongitude, double endLatitude, double endLongitude) {

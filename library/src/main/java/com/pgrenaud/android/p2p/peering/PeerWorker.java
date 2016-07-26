@@ -84,8 +84,7 @@ public class PeerWorker implements Runnable {
                                     peer.setDisplayName(event.getParams().getDisplayName());
                                     notifyDisplayNameListener();
                                 } else if (event.getEvent() == EventEntity.Type.LOCATION_UPDATE) {
-                                    peer.getLocation().setLatitude(event.getParams().getLocation().getLatitude());
-                                    peer.getLocation().setLongitude(event.getParams().getLocation().getLongitude());
+                                    peer.getLocation().setLocation(event.getParams().getLocation());
                                     notifyLocationListener();
                                 } else {
                                     Log.e("PeerWorker", "polling: unknown event type");
