@@ -168,6 +168,8 @@ private ServiceConnection connection = new ServiceConnection() {
         ...
         service.registerNfcCallback(getActivity());
         service.handleNfcIntent(nfcIntent);
+
+        nfcIntent = null;
         ...
     }
 
@@ -274,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
 
             service.getPeerHive().sync(); // Start workers for known peers
 
+            nfcIntent = null;
             bound = true;
         }
 
