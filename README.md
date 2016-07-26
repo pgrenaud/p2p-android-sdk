@@ -43,7 +43,7 @@ Then, add the `p2p-android-sdk` dependency:
 
 ```gradle
 dependencies {
-    compile 'com.github.pgrenaud:p2p-android-sdk:1.2.0'
+    compile 'com.github.pgrenaud:p2p-android-sdk:1.3.0'
 }
 ```
 
@@ -152,6 +152,10 @@ private PeerServiceListener listener = new PeerServiceListener() {
 
     @Override
     public void onPeerLocationUpdate(PeerEntity peerEntity) {
+    }
+
+    @Override
+    public void onPeerDirectoryChange(PeerEntity peerEntity) {
     }
 };
 ```
@@ -314,6 +318,16 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPeerLocationUpdate(PeerEntity peerEntity) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // TODO: Update your UI
+                }
+            });
+        }
+
+        @Override
+        public void onPeerDirectoryChange(PeerEntity peerEntity) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
